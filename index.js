@@ -6,6 +6,7 @@
 const Alexa = require('ask-sdk-core');
 
 var count = 3;  //used for counting numbers; set at 3 because that will be her first response to the user that is not the prompt
+var checkAns = 2;   //used for checking the user's answer; set at 2 because that should be the user's first response
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -32,21 +33,38 @@ const PlayIntentHandler = {
     },
     handle(handlerInput) {
         var speakOutput = '';
-        if (count%3 === 0 && count%5 === 0){
+        
+        var usrAns = handlerInput.requestEnvelope.request.intent.slots.number.value;    //used for storing user response
+        
+        if (count%3 === 0 && count%5 === 0 && checkAns == usrAns){
             speakOutput = 'fizz buzz';
             count += 2;
+            checkAns += 2;
         }
-        else if(count%3 === 0){
+        else if(count%3 === 0 && checkAns == usrAns){
             speakOutput = 'fizz';
             count += 2;
+            checkAns += 2;
         }
-        else if(count%5 === 0){
+        else if(count%5 === 0 && checkAns == usrAns){
             speakOutput = 'buzz';
-            count+=2;
+            count += 2;
+            checkAns += 2;
+        }
+        else if((count%5 === 0 || count%3 === 0) && checkAns !== usrAns){
+            speakOutput = 'I\'m sorry the correct response was ' + checkAns.toString() + '. You lose! Thanks for playing Fizz Buzz. For another great Alexa game, check out Song Quiz!';
+            count = 3;  //reset count for next session
+            checkAns = 2;   //reset checkAns for next session
+            
+            return handlerInput.responseBuilder //ends session
+                .speak(speakOutput)
+                .withShouldEndSession(true)
+                .getResponse();
         }
         else{
             speakOutput = count;
             count+=2;
+            checkAns+=2;
         }
         
         return handlerInput.responseBuilder
