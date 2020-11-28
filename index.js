@@ -5,23 +5,52 @@
  * */
 const Alexa = require('ask-sdk-core');
 
-var count = 3;  //used for counting numbers; set at 3 because that will be her first response to the user that is not the prompt
-var checkAns = 2;   //used for checking the user's answer; set at 2 because that should be the user's first response
+/*used for keeping track of her response
+ *set at 3 because that will be her first response to the user 
+ *that is not the initial prompt
+ */
+var alexaCount = 3;  
+
+/*used for checking the user's answer
+ *set at 2 because that should be the user's first response
+ */
+var usrCount = 2;   
+
+/*function to check the user's response
+ *returns what the expected answer from the user is
+ */
+function verifyAns(num){    
+    
+    if(num%3 === 0 && num%5 === 0){
+        return 'fizz buzz'; 
+    }
+    else if(num%3 === 0){
+        return 'fizz';  
+    }
+    else if(num%5 === 0){
+        return 'buzz';   
+    }
+    else{
+       return num;
+    }
+    
+}
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
     },
     handle(handlerInput) {
-        const speakOutput = 'Welcome to Fizz Buzz. We\'ll each take turns counting up from one. However, you must replace numbers divisible by 3 with the word fizz, and you must replace numbers divisible by 5 with the word buzz. If a number is divisible by both 3 and 5, you should instead say fizz buzz. If you get one wrong, you lose.';
-
+        const speakOutput = 'Welcome to Fizz Buzz. We\'ll each take turns counting up from one.'
+            + ' However, you must replace numbers divisible by 3 with the word fizz, and you must'
+            + ' replace numbers divisible by 5 with the word buzz. If a number is divisible by both 3 and 5, you should instead say fizz buzz.'
+            + ' If you get one wrong, you lose. Okay I\'ll start...one';
+        
+        const repromptOutput = 'Okay I\'ll start...one'
+        
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            .addDelegateDirective({     //prompts PlayIntent without user utterance
-               name: 'PlayIntent',
-               confirmationStatus: 'NONE',
-               slots: {}
-            })
+            .reprompt(repromptOutput)
             .getResponse();
     }
 };
@@ -34,37 +63,52 @@ const PlayIntentHandler = {
     handle(handlerInput) {
         var speakOutput = '';
         
-        var usrAns = handlerInput.requestEnvelope.request.intent.slots.number.value;    //used for storing user response
+        //stores user's number response
+        var usrNumAns = handlerInput.requestEnvelope.request.intent.slots.number.value; 
         
-        if (count%3 === 0 && count%5 === 0 && checkAns == usrAns){
+        //stores user's word response (fizz, buzz, etc.)
+        var usrWordAns = handlerInput.requestEnvelope.request.intent.slots.word.value;
+        
+        //stores what user's response should be
+        var shouldBe = verifyAns(usrCount);   
+        
+        /*Below is all the game logic
+         *Each if statement is used to determine Alexa's response
+         */
+        if (alexaCount%3 === 0 && alexaCount%5 === 0 && (shouldBe == usrNumAns || shouldBe == usrWordAns)){
             speakOutput = 'fizz buzz';
-            count += 2;
-            checkAns += 2;
+            alexaCount += 2;
+            usrCount += 2;
         }
-        else if(count%3 === 0 && checkAns == usrAns){
-            speakOutput = 'fizz';
-            count += 2;
-            checkAns += 2;
+        else if(alexaCount%3 === 0 && (shouldBe == usrNumAns|| shouldBe == usrWordAns)){
+                speakOutput = 'fizz';
+                alexaCount += 2;
+                usrCount += 2;
         }
-        else if(count%5 === 0 && checkAns == usrAns){
+        else if(alexaCount%5 === 0 && (shouldBe == usrNumAns || shouldBe == usrWordAns)){
             speakOutput = 'buzz';
-            count += 2;
-            checkAns += 2;
+            alexaCount += 2;
+            usrCount += 2;
         }
-        else if((count%5 === 0 || count%3 === 0) && checkAns !== usrAns){
-            speakOutput = 'I\'m sorry the correct response was ' + checkAns.toString() + '. You lose! Thanks for playing Fizz Buzz. For another great Alexa game, check out Song Quiz!';
-            count = 3;  //reset count for next session
-            checkAns = 2;   //reset checkAns for next session
+        else if(shouldBe != usrNumAns && shouldBe !== usrWordAns){
+            speakOutput = 'I\'m sorry the correct response was ' + 
+                shouldBe + '. You lose! Thanks for playing Fizz Buzz. For another great Alexa game, check out Song Quiz!';
+            //reset alexa for next session
+            alexaCount = 3;  
             
-            return handlerInput.responseBuilder //ends session
+            //reset user's count for next session
+            usrCount = 2;   
+            
+            //ends session
+            return handlerInput.responseBuilder 
                 .speak(speakOutput)
                 .withShouldEndSession(true)
                 .getResponse();
         }
         else{
-            speakOutput = count;
-            count+=2;
-            checkAns+=2;
+            speakOutput = alexaCount.toString();
+            alexaCount += 2;
+            usrCount += 2;
         }
         
         return handlerInput.responseBuilder
