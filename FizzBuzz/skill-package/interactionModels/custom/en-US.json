@@ -1,0 +1,86 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "fizz buzz",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "PlayIntent",
+          "slots": [
+            {
+              "name": "number",
+              "type": "AMAZON.NUMBER"
+            },
+            {
+              "name": "word",
+              "type": "FIZZBUZZ_SLOT"
+            }
+          ],
+          "samples": [
+            "{word}",
+            "{number}"
+          ]
+        },
+        {
+          "name": "RepeatIntent",
+          "slots": [],
+          "samples": [
+            "repeat"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "values": [
+            {
+              "name": {
+                "value": "fizzbuzz"
+              }
+            },
+            {
+              "name": {
+                "value": "buzz"
+              }
+            },
+            {
+              "name": {
+                "value": "fizz",
+                "synonyms": [
+                  "FIZZ",
+                  "Fizz",
+                  "fizz"
+                ]
+              }
+            }
+          ],
+          "name": "FIZZBUZZ_SLOT"
+        }
+      ],
+      "modelConfiguration": {
+        "fallbackIntentSensitivity": {
+          "level": "LOW"
+        }
+      }
+    }
+  },
+  "version": "25"
+}
