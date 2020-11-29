@@ -14,7 +14,10 @@ var alexaCount = 3;
 /*used for checking the user's answer
  *set at 2 because that should be the user's first response
  */
-var usrCount = 2;   
+var usrCount = 2;  
+
+/*used for triggering repeat intent*/
+var repeat = '';
 
 /*function to check the user's response
  *returns what the expected answer from the user is
@@ -46,7 +49,9 @@ const LaunchRequestHandler = {
             + ' replace numbers divisible by 5 with the word buzz. If a number is divisible by both 3 and 5, you should instead say fizz buzz.'
             + ' If you get one wrong, you lose. Okay I\'ll start...one';
         
-        const repromptOutput = 'Okay I\'ll start...one'
+        const repromptOutput = 'Okay I\'ll start...one';
+        
+        repeat = speakOutput;
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -93,14 +98,12 @@ const PlayIntentHandler = {
         else if(shouldBe != usrNumAns && shouldBe !== usrWordAns){
             speakOutput = 'I\'m sorry the correct response was ' + 
                 shouldBe + '. You lose! Thanks for playing Fizz Buzz. For another great Alexa game, check out Song Quiz!';
-            //reset alexa for next session
-            alexaCount = 3;  
+            alexaCount = 3;  //reset alexa for next session
+            usrCount = 2;   //reset user's count for next session
             
-            //reset user's count for next session
-            usrCount = 2;   
+            repeat = speakOutput;
             
-            //ends session
-            return handlerInput.responseBuilder 
+            return handlerInput.responseBuilder //ends session
                 .speak(speakOutput)
                 .withShouldEndSession(true)
                 .getResponse();
@@ -111,6 +114,8 @@ const PlayIntentHandler = {
             usrCount += 2;
         }
         
+        repeat = speakOutput;
+
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .reprompt(speakOutput)
@@ -118,17 +123,17 @@ const PlayIntentHandler = {
     }
 };
 
-const HelloWorldIntentHandler = {
+const RepeatIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'HelloWorldIntent';
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'RepeatIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'Hello World!';
+        const speakOutput = repeat;
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
+            .reprompt(speakOutput)
             .getResponse();
     }
 };
@@ -139,7 +144,12 @@ const HelpIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'You can say hello to me! How can I help?';
+        const speakOutput = 'Welcome to Fizz Buzz. We\'ll each take turns counting up from one.'
+            + ' However, you must replace numbers divisible by 3 with the word fizz, and you must'
+            + ' replace numbers divisible by 5 with the word buzz. If a number is divisible by both 3 and 5, you should instead say fizz buzz.'
+            + ' If you get one wrong, you lose.';
+
+        repeat = speakOutput;
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -155,7 +165,9 @@ const CancelAndStopIntentHandler = {
                 || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
     },
     handle(handlerInput) {
-        const speakOutput = 'Goodbye!';
+        const speakOutput = 'Thanks for playing Fizz Buzz! For another great Alexa game, check out Song Quiz!';
+
+        repeat = speakOutput;
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -174,6 +186,8 @@ const FallbackIntentHandler = {
     },
     handle(handlerInput) {
         const speakOutput = 'Sorry, I don\'t know about that. Please try again.';
+
+        repeat = speakOutput;
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -209,6 +223,8 @@ const IntentReflectorHandler = {
         const intentName = Alexa.getIntentName(handlerInput.requestEnvelope);
         const speakOutput = `You just triggered ${intentName}`;
 
+        repeat = speakOutput;
+
         return handlerInput.responseBuilder
             .speak(speakOutput)
             //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
@@ -228,6 +244,8 @@ const ErrorHandler = {
         const speakOutput = 'Sorry, I had trouble doing what you asked. Please try again.';
         console.log(`~~~~ Error handled: ${JSON.stringify(error)}`);
 
+        repeat = speakOutput;
+
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .reprompt(speakOutput)
@@ -244,8 +262,8 @@ exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
         PlayIntentHandler,
-        HelloWorldIntentHandler,
         HelpIntentHandler,
+        RepeatIntentHandler,
         CancelAndStopIntentHandler,
         FallbackIntentHandler,
         SessionEndedRequestHandler,
