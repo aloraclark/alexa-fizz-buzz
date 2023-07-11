@@ -1,4 +1,4 @@
-# Volley-Takehome
+# Alexa Fizz Buzz
 This is my code for my Amazon Alexa Skill modeled after the famous game FizzBuzz!
 
 The rules of the game are simple:
